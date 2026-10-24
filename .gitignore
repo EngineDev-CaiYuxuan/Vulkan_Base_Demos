@@ -1,0 +1,36 @@
+# CMake ��������
+build/
+out/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+
+# VS ��������
+.vs/
+*.vcxproj.user
+*.suo
+*.sdf
+ipch/
+
+# �����м����
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.lib
+*.exe
+
+# ��ʱ�ļ�
+*.tmp
+
+# 第三方库编译产物、文档
+thirdparty/**/docs/
+thirdparty/**/test/
+thirdparty/**/util/
+thirdparty/**/*.html
+thirdparty/**/*.js
+thirdparty/**/*.css
+thirdparty/**/*.png
+thirdparty/**/*.svg
+# glfw 预编译dll、lib（如果你不想提交）
+thirdparty/glfw/lib-*/
