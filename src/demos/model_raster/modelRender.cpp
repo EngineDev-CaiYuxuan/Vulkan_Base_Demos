@@ -392,7 +392,7 @@ void ModelRender::loadModel()
 	std::vector<tinyobj::material_t> materials;
 	std::string warn, err;
 
-	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATH.c_str())) {
+	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, modelPathStr.c_str())) {
 		throw std::runtime_error(warn + err);
 	}
 
@@ -564,7 +564,7 @@ void ModelRender::createTextureImage()
 	//加载图像
 
 	int texWidth, texHeight, texChannels;
-	stbi_uc* pixels = stbi_load(TEXTURE_PATH.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+	stbi_uc* pixels = stbi_load(texturePath.string().c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 	VkDeviceSize imageSize = texWidth * texHeight * 4;
 
 	if (!pixels)
@@ -681,9 +681,12 @@ void ModelRender::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t wid
 //创建图形管线
 void ModelRender::createGraphicsPipeline()
 {
+	const fs::path baseDir = GetExeDirectory();
+	const fs::path vertPath = baseDir / "shaders" / "vert.spv";
+	const fs::path fragPath = baseDir / "shaders" / "frag.spv";
 	//获取着色器字节码
-	auto vertShaderCode = readFile("shaders/vert.spv");
-	auto fragShaderCode = readFile("shaders/frag.spv");
+	auto vertShaderCode = readFile(vertPath);
+	auto fragShaderCode = readFile(fragPath);
 
 	//包装着色器字节码
 	VkShaderModule vertShaderModule = createShaderModule(vertShaderCode, device);

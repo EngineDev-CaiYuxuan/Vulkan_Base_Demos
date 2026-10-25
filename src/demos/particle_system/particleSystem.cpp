@@ -458,8 +458,11 @@ void ParticleSystem::createComputePipeline()
 		throw std::runtime_error("failed to create compute pipeline!");
 	}
 
+
+	const fs::path baseDir = GetExeDirectory();
+	const fs::path compPath = baseDir / "shaders" / "comp.spv";
 	//获取着色器字节码
-	auto computeShaderCode = readFile("shaders/comp.spv");
+	auto computeShaderCode = readFile(compPath);
 	//包装着色器字节码
 	VkShaderModule compShaderModule = createShaderModule(computeShaderCode, device);
 	//创建着色器阶段
@@ -641,9 +644,12 @@ void ParticleSystem::createParticlePipeline()
 	}
 
 
+	const fs::path baseDir = GetExeDirectory();
+	const fs::path vertPath = baseDir / "shaders" / "pVert.spv";
+	const fs::path fragPath = baseDir / "shaders" / "pFrag.spv";
 	//获取着色器字节码
-	auto vertShaderCode = readFile("shaders/pVert.spv");
-	auto fragShaderCode = readFile("shaders/pFrag.spv");
+	auto vertShaderCode = readFile(vertPath);
+	auto fragShaderCode = readFile(fragPath);
 
 	//包装着色器字节码
 	VkShaderModule vertShaderModule = createShaderModule(vertShaderCode, device);

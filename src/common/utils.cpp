@@ -231,17 +231,30 @@ uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, V
 	throw std::runtime_error("failed to find suitable memory type!");
 }
 
-std::vector<char> readFile(const std::string& filename)
+fs::path GetExeDirectory()
 {
-	std::ifstream file(filename, std::ios::ate | std::ios::binary);
+	// 缓冲区，足够容纳Windows路径
+	wchar_t buffer[2048] = { 0 };
+	// nullptr = 当前进程模块（也就是exe本身）
+	if (GetModuleFileNameW(nullptr, buffer, static_cast<DWORD>(std::size(buffer))) == 0)
+	{
+		throw std::runtime_error("GetModuleFileNameW failed, cannot get exe path");
+	}
+	fs::path exeFullPath(buffer);
+	return exeFullPath.parent_path();
+}
+std::vector<char> readFile(const fs::path& filePath)
+{
+	std::ifstream file(filePath, std::ios::ate | std::ios::binary);
 
 	if (!file.is_open())
 	{
-		throw std::runtime_error("failed to open file!");
+		throw std::runtime_error(std::string("Failed to open file: ") + filePath.string());
 	}
 
-	size_t fileSize = (size_t)file.tellg();
+	const size_t fileSize = static_cast<size_t>(file.tellg());
 	std::vector<char> buffer(fileSize);
+
 	file.seekg(0);
 	file.read(buffer.data(), fileSize);
 	file.close();

@@ -17,32 +17,35 @@ if (NOT Vulkan_FOUND)
     message(FATAL_ERROR "Vulkan SDK not found! Please install Vulkan SDK and add it to PATH.")
 endif()
 
-# ========== 第三方库配置（thirdparty 内嵌） ==========
-# glm：纯头文件库，直接加 include 路径
-set(GLM_DIR "${PROJECT_SOURCE_DIR}/thirdparty/glm")
+# ========== 第三方库配置（FetchContent） ==========
+include(FetchContent)
 
-# GLFW：预编译静态库（官方下载的 VC 预编译包结构）
-# 注意：如果你的 glfw 库文件夹名不是 lib-vc2022，改成你实际的名字
-set(GLFW_DIR "${PROJECT_SOURCE_DIR}/thirdparty/glfw")
-set(GLFW_INCLUDE_DIR "${GLFW_DIR}/include")
-set(GLFW_LIB "${GLFW_DIR}/lib-vc2022/glfw3.lib")
+# glm 纯头文件
+FetchContent_Declare(glm
+    GIT_REPOSITORY https://github.com/g-truc/glm.git
+    GIT_TAG 1.0.1
+)
+# glfw 源码编译
+FetchContent_Declare(glfw
+    GIT_REPOSITORY https://github.com/glfw/glfw.git
+    GIT_TAG 3.4
+)
+FetchContent_MakeAvailable(glm glfw)
+
+# MSVC 运行库统一
 if(MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY
         "$<IF:$<CONFIG:Debug>,MultiThreadedDebugDLL,MultiThreadedDLL>")
 endif()
 
-# 静态链接 GLFW 需要的宏
-add_compile_definitions(GLFW_STATIC)
-
 # ========== 收集源码文件 ==========
-# 递归扫描 src 下所有 .h/.cpp（common + 两个demo + main.cpp）
 file(GLOB_RECURSE SRC_FILES
     "${PROJECT_SOURCE_DIR}/src/*.h"
     "${PROJECT_SOURCE_DIR}/src/*.hpp"
     "${PROJECT_SOURCE_DIR}/src/*.cpp"
 )
 
-# 收集着色器文件（加入工程方便浏览，不参与C++编译）
+# 收集着色器文件（仅用于VS工程浏览，不参与C++编译）
 file(GLOB_RECURSE SHADER_FILES
     "${PROJECT_SOURCE_DIR}/src/demos/*/shaders/*.vert"
     "${PROJECT_SOURCE_DIR}/src/demos/*/shaders/*.frag"
@@ -60,9 +63,10 @@ add_executable(${PROJECT_NAME}
     ${SRC_FILES}
     ${SHADER_FILES}
     ${ASSET_FILES}
- "src/common/syncManager.h" "src/common/syncManager.cpp" "src/demos/particle_system/particleSystem.h" "src/demos/particle_system/particleSystem.cpp")
+ "src/application.h" "src/application.cpp")
 
- add_custom_command(TARGET Vulkan_Base_Demos POST_BUILD
+# 拷贝资源
+add_custom_command(TARGET Vulkan_Base_Demos POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_SOURCE_DIR}/assets"
         "$<TARGET_FILE_DIR:Vulkan_Base_Demos>/assets"
@@ -73,21 +77,21 @@ add_custom_command(TARGET Vulkan_Base_Demos POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_SOURCE_DIR}/src/demos/model_raster/shaders"
         "$<TARGET_FILE_DIR:Vulkan_Base_Demos>/shaders"
-    COMMENT "Copying shaders"
+    COMMENT "Copying model raster shaders"
 )
 
 add_custom_command(TARGET Vulkan_Base_Demos POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_SOURCE_DIR}/src/demos/particle_system/shaders"
         "$<TARGET_FILE_DIR:Vulkan_Base_Demos>/shaders"
-    COMMENT "Copying shaders"
+    COMMENT "Copying particle system shaders"
 )
 
-# ========== 头文件搜索路径 ==========
+# ========== 头文件搜索路径【重点修复】 ==========
 target_include_directories(${PROJECT_NAME} PRIVATE
-    ${PROJECT_SOURCE_DIR}/src       # 源码根目录，统一用 "common/xxx.h" "demos/xxx.h" 引用
-    ${GLM_DIR}
-    ${GLFW_INCLUDE_DIR}
+    ${PROJECT_SOURCE_DIR}/src
+    ${glm_SOURCE_DIR}
+    ${glfw_SOURCE_DIR}/include
     ${Vulkan_INCLUDE_DIRS}
     ${PROJECT_SOURCE_DIR}/thirdparty/stb
     ${PROJECT_SOURCE_DIR}/thirdparty/tinyobjloader
@@ -95,20 +99,19 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 # ========== 链接库 ==========
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    ${GLFW_LIB}
+    glfw
     Vulkan::Vulkan
-    # Windows 下 GLFW 静态链接依赖的系统库
     user32.lib
     gdi32.lib
     shell32.lib
 )
 
-# ========== VS 工程筛选器分组（和磁盘目录保持一致） ==========
+# ========== VS 工程筛选器分组 ==========
 source_group(TREE "${PROJECT_SOURCE_DIR}/src" PREFIX "Source" FILES ${SRC_FILES})
 source_group(TREE "${PROJECT_SOURCE_DIR}/src/demos" PREFIX "Shaders" FILES ${SHADER_FILES})
 source_group(TREE "${PROJECT_SOURCE_DIR}" PREFIX "Assets" FILES ${ASSET_FILES})
 
-# ========== 可选：设置 VS 启动项目 ==========
+# ========== 设置 VS 启动项目 ==========
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 
 set_source_files_properties(${ASSET_FILES}  PROPERTIES HEADER_FILE_ONLY TRUE)
@@ -122,9 +125,10 @@ message(STATUS "Vulkan_LIBRARY: ${Vulkan_LIBRARY}")
 message(STATUS "Vulkan_LIBRARIES: ${Vulkan_LIBRARIES}")
 message(STATUS "Vulkan_VERSION: ${Vulkan_VERSION}")
 message(STATUS "VULKAN_SDK ENV: $ENV{VULKAN_SDK}")
+message(STATUS "glm_SOURCE_DIR: ${glm_SOURCE_DIR}")
+message(STATUS "glfw_SOURCE_DIR: ${glfw_SOURCE_DIR}")
 message(STATUS "============================")
 
-# 打印 IMPORTED target 的接口头路径（写在CMakeLists里面，不是PS）
 get_target_property(VK_TARGET_INC Vulkan::Vulkan INTERFACE_INCLUDE_DIRECTORIES)
 message(STATUS "Vulkan::Vulkan INTERFACE_INCLUDE_DIRECTORIES = ${VK_TARGET_INC}")
 message(STATUS "============================")

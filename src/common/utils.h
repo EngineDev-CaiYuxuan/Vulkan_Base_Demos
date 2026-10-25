@@ -15,6 +15,12 @@
 
 #include "../thirdparty/tiny/tiny_obj_loader.h"
 
+#include <filesystem>
+#define NOMINMAX
+#include <windows.h>
+#include <string>
+namespace fs = std::filesystem;
+
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -247,6 +253,8 @@ void createImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCo
 
 uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, VkPhysicalDevice physicalDevice);
 
-std::vector<char> readFile(const std::string& filename);
+fs::path GetExeDirectory();
+
+std::vector<char> readFile(const fs::path& filePath);
 
 VkShaderModule createShaderModule(const std::vector<char>& code, VkDevice device);

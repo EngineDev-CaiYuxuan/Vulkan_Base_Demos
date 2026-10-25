@@ -61,8 +61,10 @@ private:
 
 
 private:
-	const std::string MODEL_PATH = "assets/models/viking_room.obj";
-	const std::string TEXTURE_PATH = "assets/textures/viking_room.png";
+	fs::path modelPath = GetExeDirectory() / "assets/models/viking_room.obj";
+	std::string modelPathStr = modelPath.string();
+
+	fs::path texturePath = GetExeDirectory() / "assets/textures/viking_room.png";
 
 	uint32_t currentFrame = 0;
 
