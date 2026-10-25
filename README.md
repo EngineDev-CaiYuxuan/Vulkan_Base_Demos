@@ -2,8 +2,11 @@
 
 基于 **C++17** 和 **Vulkan API** 的现代化图形渲染框架与 Demo 集合。本项目专注于探索 Vulkan 底层渲染管线的搭建，以及计算管线与图形管线的跨队列协同，包含两个独立的高级渲染 Demo：**模型光栅化渲染器** 与 **GPU 计算粒子系统**。
 
-> 💡![model](.\image\model.gif)
-> ![particle](.\image\particle.gif)
+> 💡![model](.\image\model.png)
+> ![particle](.\image\particle.png)
+>
+> 完整演示视频：
+> [基于Vulkan实现的双demo项目展示视频_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1cvH56wE3M/?vd_source=c8ced3ca81afa79af3b54a1a15777e46)
 
 ## 🛠 核心技术栈
 *   **底层图形接口**：Vulkan 1.3+ (开启了 Khronos Validation Layer 校验，零警告)
