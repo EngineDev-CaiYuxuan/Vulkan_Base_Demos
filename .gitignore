@@ -34,3 +34,6 @@ thirdparty/**/*.png
 thirdparty/**/*.svg
 # glfw 预编译dll、lib（如果你不想提交）
 thirdparty/glfw/lib-*/
+
+
+!assets/**/*.obj
